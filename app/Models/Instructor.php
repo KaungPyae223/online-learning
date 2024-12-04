@@ -9,4 +9,9 @@ class Instructor extends Model
 {
     /** @use HasFactory<\Database\Factories\InstructorFactory> */
     use HasFactory;
+
+    public function course(){
+        return $this->hasMany(Course::class,'instructor_id','id');
+    }
+
 }

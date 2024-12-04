@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger("language_id");
             $table->unsignedBigInteger("instructor_id");
             $table->longText("course_image");
-
+            $table->boolean("is_public")->default(false);
             $table->timestamps();
         });
     }
