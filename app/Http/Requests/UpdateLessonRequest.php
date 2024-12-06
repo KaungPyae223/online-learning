@@ -22,8 +22,6 @@ class UpdateLessonRequest extends FormRequest
     public function rules(): array
     {
         return [
-
-            'video' => 'nullable|mimes:mp4,avi,mov,mkv|max:500000',
             'lesson_name' => 'required',
             'curriculum_id' => 'required|exists:curricula,id'
         ];

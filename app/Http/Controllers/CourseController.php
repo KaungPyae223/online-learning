@@ -6,7 +6,8 @@ use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 use function PHPSTORM_META\map;
 
@@ -84,10 +85,15 @@ class CourseController extends Controller
         $course  = new Course();
 
         $image = $request->file('course_image');
-        $destinationPath = public_path('images');
         $imageName = 'Course_image_' . uniqid() . '.' . $image->extension();
-        $image->move($destinationPath, $imageName);
-        $course->course_image = url('images/' . $imageName);
+        $image->storeAs("images/course_image", $imageName,"public");
+
+        $full_path = storage_path('app/public/storage/images/course_image');
+        chmod($full_path,0775);
+
+        // $image->move($destinationPath, $imageName);
+        $course->course_image = asset('storage/' . $imageName);
+
 
 
         $course->course_name = $request->name;
@@ -125,7 +131,7 @@ class CourseController extends Controller
 
         $hours = $totalMinute/60;
         $minutes = $totalMinute%60;
-        $duration = $hours . "hr " . $minutes. "min";
+        $duration = ($hours>0? $hours . "hr " : "") . $minutes. "min";
 
         $total_lesson = $course->curriculum
         ? $course->curriculum->flatMap->lesson->count():0;
@@ -191,7 +197,7 @@ class CourseController extends Controller
         function time_convert ($duration){
             $hours = $duration/60;
             $minutes = $duration%60;
-            return $hours . "hr " . $minutes. "min";
+            return ($hours>0? $hours . "hr " : "") . $minutes. "min";
         }
 
         $curriculum = $course->curriculum->map(function($data){
@@ -266,27 +272,51 @@ class CourseController extends Controller
         //
     }
 
+    public function updateImage(Request $request)
+    {
+        $request->validate([
+            'course_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'course_id' => 'required|exists:courses,id'
+        ]);
+
+        if ($request->hasFile('course_image')) {
+            $image = $request->file('course_image');
+            $course_id = $request->course_id;
+
+            // Retrieve the course
+            $course = Course::find($course_id);
+
+            // Define the image name and store the image
+            $imageName = 'Course_image_' . uniqid() . '.' . $image->extension();
+            $imagePath = $image->storeAs('images/course_image', $imageName, 'public'); // Store in 'storage/app/public/images/course_image'
+
+            // Delete the old image if it exists
+            if ($course->course_image) {
+                $oldImagePath = str_replace(asset('storage'), '', $course->course_image);
+
+                if (Storage::disk('public')->exists($oldImagePath)) {
+                    Storage::disk('public')->delete($oldImagePath);
+                }
+            }
+
+            // Update the course with the new image URL
+            $course->course_image = asset('storage/' . $imagePath); // Generate correct URL
+            $course->update();
+
+            // Return a success response
+            return response()->json(['message' => 'Image updated successfully!', 'path' => $course->course_image], 200);
+        }
+
+        return response()->json(['message' => 'No image uploaded'], 400);
+    }
+
+
+
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdateCourseRequest $request, Course $course)
     {
-
-        if($request->file('course_image')){
-            $image = $request->file('course_image');
-            $destinationPath = public_path('images');
-            $imageName = 'Course_image_' . uniqid() . '.' . $image->extension();
-            $image->move($destinationPath, $imageName);
-            $course->course_image = url('images/' . $imageName);
-
-            if ($course->course_image) {
-                $oldImagePath = str_replace(url('/'), public_path(), $course->course_image);
-                if (File::exists($oldImagePath)) {
-                    File::delete($oldImagePath);
-                }
-            }
-
-        }
 
         $course->course_name = $request->name;
         $course->course_info = $request->info;

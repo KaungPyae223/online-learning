@@ -6,7 +6,10 @@ use App\Http\Requests\StoreLessonRequest;
 use App\Http\Requests\UpdateLessonRequest;
 use App\Models\Lesson;
 use getID3;
+use Illuminate\Auth\Events\Validated;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class LessonController extends Controller
 {
@@ -46,16 +49,14 @@ class LessonController extends Controller
         // Video file upload
 
         $video = $request->file('video');
-        $destinationPath = public_path('videos');
         $videoName = 'Course_video_' . uniqid() . '.' . $video->getClientOriginalExtension(); // Generate a unique name
 
-        $video->move($destinationPath, $videoName);
+        $videoPath = $video->storeAs("/course_video", $videoName,"public");
 
         // Analysis the duration
 
-        $videoPath = $destinationPath . '/' . $videoName;
         $getID3 = new getID3();
-        $fileInfo = $getID3->analyze($videoPath);
+        $fileInfo = $getID3->analyze(storage_path('app/public/' . $videoPath));
 
         if (!isset($fileInfo['playtime_seconds'])) {
             return response()->json(['message' => 'Unable to analyze video'], 400);
@@ -67,7 +68,7 @@ class LessonController extends Controller
 
         $lesson->curriculum_id = $request->curriculum_id;
         $lesson->lesson_name = $request->lesson_name;
-        $lesson->video = url('videos/' . $videoName);
+        $lesson->video = asset('storage/'.$videoPath);
         $lesson->duration = $durationInMinutes;
 
         $lesson->save();
@@ -98,23 +99,28 @@ class LessonController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateLessonRequest $request, Lesson $lesson)
-    {
+    // Update lesson video
+
+    public function updateLessonVideo (Request $request){
 
 
-        if($request->file('video')){
-            $video = $request->file('video');
-            $destinationPath = public_path('videos');
+        $request->validate([
+            'video' => 'required|mimes:mp4,avi,mov,mkv|max:500000',
+            'lesson_id' => 'required|exists:lessons,id',
+        ]);
+
+        if($request->hasFile("video")){
+
+            $video = $request->file("video");
+            $lesson_id = $request->lesson_id;
+
+            $lesson = Lesson::find($lesson_id);
+
             $videoName = 'Course_video_' . uniqid() . '.' . $video->getClientOriginalExtension(); // Generate a unique name
+            $videoPath = $video->storeAs("/course_video",$videoName,"public");
 
-            $video->move($destinationPath, $videoName);
-
-            $videoPath = $destinationPath . '/' . $videoName;
             $getID3 = new getID3();
-            $fileInfo = $getID3->analyze($videoPath);
+            $fileInfo = $getID3->analyze(storage_path('app/public/' . $videoPath));
 
             if (!isset($fileInfo['playtime_seconds'])) {
                 return response()->json(['message' => 'Unable to analyze video'], 400);
@@ -123,17 +129,36 @@ class LessonController extends Controller
             $durationInSeconds = $fileInfo['playtime_seconds'];
             $durationInMinutes = round($durationInSeconds / 60, 0);
 
-            $lesson->duration = $durationInMinutes;
-            $lesson->video = url('videos/' . $videoName);
 
-            if ($lesson->video) {
-                $OldVideoPath = str_replace(url('/'), public_path(), $lesson->video);
-                if (File::exists($OldVideoPath)) {
-                    File::delete($OldVideoPath);
+            if($lesson->video){
+                $old_video_path = str_replace(asset('storage'), '', $lesson->video);
+                if (Storage::disk('public')->exists($old_video_path)) {
+                    Storage::disk('public')->delete($old_video_path);
                 }
             }
 
+
+            $lesson->video = asset('storage/'.$videoPath);
+            $lesson->duration = $durationInMinutes;
+            $lesson->update();
+
+            return response()->json([
+                'message' => 'Successfully lesson video updated',
+                'data' => $lesson
+            ], 400);
+
+
         }
+
+        return response()->json(['message' => 'No video uploaded'], 400);
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateLessonRequest $request, Lesson $lesson)
+    {
 
 
         $lesson->curriculum_id = $request->curriculum_id;

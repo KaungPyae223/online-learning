@@ -11,6 +11,10 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+
+Route::post('/course/update-photo',[CourseController::class,'updateImage']);
+Route::post('/lesson/update-video',[LessonController::class,'updateLessonVideo']);
+
 Route::apiResource('/category',CategoryController::class);
 Route::apiResource('/course',CourseController::class);
 Route::apiResource('/curricula',CurriculumController::class);
