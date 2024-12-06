@@ -344,7 +344,17 @@ class CourseController extends Controller
      */
     public function destroy(Course $course)
     {
+
+        if ($course->course_image) {
+            $oldImagePath = str_replace(asset('storage'), '', $course->course_image);
+
+            if (Storage::disk('public')->exists($oldImagePath)) {
+                Storage::disk('public')->delete($oldImagePath);
+            }
+        }
+
         $course->delete();
+
         return response()->json(
             [
                 'message' => 'Course deleted successfully',

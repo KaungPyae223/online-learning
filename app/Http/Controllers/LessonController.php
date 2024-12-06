@@ -183,6 +183,13 @@ class LessonController extends Controller
     public function destroy(Lesson $lesson)
     {
 
+        if($lesson->video){
+            $old_video_path = str_replace(asset('storage'), '', $lesson->video);
+            if (Storage::disk('public')->exists($old_video_path)) {
+                Storage::disk('public')->delete($old_video_path);
+            }
+        }
+
         $lesson->delete();
 
         return response()->json(
