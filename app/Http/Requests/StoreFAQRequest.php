@@ -11,7 +11,7 @@ class StoreFAQRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,6 +23,9 @@ class StoreFAQRequest extends FormRequest
     {
         return [
             //
+            'question' => 'required|string|min:10',
+            'answer' => 'required|string|min:10',
+            'course_id' => 'required|exists:courses_id'
         ];
     }
 }
