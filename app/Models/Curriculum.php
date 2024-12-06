@@ -9,4 +9,8 @@ class Curriculum extends Model
 {
     /** @use HasFactory<\Database\Factories\CurriculumFactory> */
     use HasFactory;
+
+    public function lesson () {
+        return $this->hasMany(Lesson::class,'curriculum_id','id');
+    }
 }
