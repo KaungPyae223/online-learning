@@ -17,7 +17,7 @@ class LevelFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'level' => $this->faker->randomElement(['Beginner', 'Intermediate', 'Advanced']),
         ];
     }
 }
