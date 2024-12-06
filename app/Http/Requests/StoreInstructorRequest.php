@@ -11,7 +11,7 @@ class StoreInstructorRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,6 +23,10 @@ class StoreInstructorRequest extends FormRequest
     {
         return [
             //
+            'name' => 'required|string|min:3|max:255',
+           ' info ' => 'nullable|string|min:10',
+           'type'   => 'required|string',
+           'instructor_image' => 'nullable|image|mimes:jpeg,png,jpg,gif'
         ];
     }
 }

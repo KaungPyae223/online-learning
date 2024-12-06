@@ -1,6 +1,9 @@
 <?php
 
 
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\FAQController;
+use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CurriculumController;
@@ -9,6 +12,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +20,14 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+
+
+Route::apiResource('instructors',InstructorController::class);
+
+
+Route::apiResource('blog',BlogController::class);
+
+Route::apiResource('faq',FAQController::class);
 
 Route::post('/course/update-photo',[CourseController::class,'updateImage']);
 Route::post('/lesson/update-video',[LessonController::class,'updateLessonVideo']);
@@ -40,4 +52,5 @@ Route::get('/languages/{id}/courses', [LanguageController::class, 'getCoursesByL
 Route::apiResource('languages', LanguageController::class);
 
 Route::apiResource('/reviews', ReviewController::class);
+
 

@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateFAQRequest extends FormRequest
+class UpdateBlogRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class UpdateFAQRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+
+            'blog_name'     => 'required|string|min:3|max:255',
+            'instructor_id' => 'required|exists:instructors,id',
+            'blog_info'     => 'nullable|string|min:10',
+            'blog_content'  => 'required|string|min:50',
+            'blog_image'    => 'nullable|image|mimes:jpeg,png,jpg',
         ];
     }
 }
