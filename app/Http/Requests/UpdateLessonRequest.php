@@ -11,7 +11,7 @@ class UpdateLessonRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class UpdateLessonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'lesson_name' => 'required',
+            'curriculum_id' => 'required|exists:curricula,id'
         ];
     }
 }

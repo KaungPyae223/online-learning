@@ -13,7 +13,15 @@ class CurriculumController extends Controller
      */
     public function index()
     {
-        //
+        $curriculum = Curriculum::all();
+        return response()->json(
+            [
+
+                'data' => $curriculum,
+                'status' => 200
+            ],
+            200
+        );
     }
 
     /**
@@ -29,7 +37,20 @@ class CurriculumController extends Controller
      */
     public function store(StoreCurriculumRequest $request)
     {
-        //
+        $curriculum = new Curriculum();
+        $curriculum->course_id = $request->course_id;
+        $curriculum->curriculum_name = $request->curriculum_name;
+
+        $curriculum->save();
+
+        return response()->json(
+            [
+                'message' => "curriculum added successfully",
+                'data' => $curriculum,
+                'status' => 200
+            ],
+            200
+        );
     }
 
     /**
@@ -45,7 +66,7 @@ class CurriculumController extends Controller
      */
     public function edit(Curriculum $curriculum)
     {
-        //
+
     }
 
     /**
@@ -53,7 +74,20 @@ class CurriculumController extends Controller
      */
     public function update(UpdateCurriculumRequest $request, Curriculum $curriculum)
     {
-        //
+
+        $curriculum->course_id = $request->course_id;
+        $curriculum->curriculum_name = $request->curriculum_name;
+
+        $curriculum->update();
+
+        return response()->json(
+            [
+                'message' => "curriculum updated successfully",
+                'data' => $curriculum,
+                'status' => 200
+            ],
+            200
+        );
     }
 
     /**
@@ -61,6 +95,15 @@ class CurriculumController extends Controller
      */
     public function destroy(Curriculum $curriculum)
     {
-        //
+
+        $curriculum->delete();
+
+        return response()->json(
+            [
+                'message' => "curriculum deleted successfully",
+                'status' => 200
+            ],
+            200
+        );
     }
 }

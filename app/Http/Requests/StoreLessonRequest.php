@@ -11,7 +11,7 @@ class StoreLessonRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class StoreLessonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'video' => 'required|mimes:mp4,avi,mov,mkv|max:500000',
+            'lesson_name' => 'required',
+            'curriculum_id' => 'required|exists:curricula,id'
         ];
     }
 }
