@@ -13,6 +13,7 @@ class Blog extends Model
     public function instructor()
     {
         return $this->belongsTo(Instructor::class);
+
     }
 
 }
