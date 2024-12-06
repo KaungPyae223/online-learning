@@ -20,6 +20,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'user_type',
+        'phone',
+        'user_photo',
     ];
 
     /**
@@ -43,5 +46,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_students', 'user_id', 'course_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }

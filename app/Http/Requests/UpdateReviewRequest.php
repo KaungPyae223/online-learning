@@ -11,7 +11,7 @@ class UpdateReviewRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,10 @@ class UpdateReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'user_id' => 'required|exists:users,id',
+            'course_id' => 'required|exists:courses,id',
+            'rating' => 'nullable|numeric|min:0|max:5',
+            'review' => 'required|string',
         ];
     }
 }
