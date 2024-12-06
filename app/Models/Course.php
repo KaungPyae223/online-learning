@@ -12,7 +12,7 @@ class Course extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class, 'course_students', 'course_id', 'user_id');
     }
 
     public function levels()

@@ -233,7 +233,7 @@ class UserController extends Controller
             $courseId = $request->course_id;
             $course = Course::find($courseId);
 
-            if ($user->courses()->where('id', $courseId)->exists()) {
+            if ($user->courses()->where('course_id', $courseId)->exists()) {
                 return response()->json([
                     'message' => 'You are already enrolled in this course',
                 ], 200);
@@ -244,8 +244,8 @@ class UserController extends Controller
                 'message' => 'Course enrolled successfully',
                 'course' => [
                     'id' => $courseId,
-                    'course_title' => $course->title,
-                    'course_description' => $course->description,
+                    'course_name' => $course->course_name,
+                    'course_description' => $course->course_description,
                     'can_learn' => $course->can_learn,
                     'skill_gain' => $course->skill_gain,
                     'price' => $course->price,
@@ -271,7 +271,7 @@ class UserController extends Controller
             $courseId = $request->course_id;
             $course = Course::find($courseId);
 
-            if (!$user->courses()->where('id', $courseId)->exists()) {
+            if (!$user->courses()->where('course_id', $courseId)->exists()) {
                 return response()->json([
                     'message' => 'You are not enrolled in this course',
                 ], 200);
@@ -282,8 +282,8 @@ class UserController extends Controller
                 'message' => 'Course unenrolled successfully',
                 'course' => [
                     'id' => $courseId,
-                    'course_title' => $course->title,
-                    'course_description' => $course->description,
+                    'course_name' => $course->course_name,
+                    'course_description' => $course->course_description,
                     'can_learn' => $course->can_learn,
                     'skill_gain' => $course->skill_gain,
                     'price' => $course->price,
@@ -317,7 +317,7 @@ class UserController extends Controller
 
 
                 if ($user->user_photo) {
-                    Storage::delete('images/usersPhoto/' . $user->user_photo, 'public');
+                    Storage::disk('public')->delete('images/usersPhoto/' . $user->user_photo);
                 }
 
 
