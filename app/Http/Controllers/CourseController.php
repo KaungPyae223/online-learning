@@ -26,9 +26,9 @@ class CourseController extends Controller
             ? $course->curriculum->flatMap->lesson->sum('duration')
             : 0;
 
-            $hours = $totalMinute/60;
+            $hours = (int) ($totalMinute/60);
             $minutes = $totalMinute%60;
-            $duration = $hours . "hr " . $minutes. "min";
+            $duration =  ($hours>0? $hours . "hr " : "") . $minutes. "min";
 
             $total_lesson = $course->curriculum
             ? $course->curriculum->flatMap->lesson->count():0;
@@ -88,10 +88,6 @@ class CourseController extends Controller
         $imageName = 'Course_image_' . uniqid() . '.' . $image->extension();
         $image->storeAs("images/course_image", $imageName,"public");
 
-        $full_path = storage_path('app/public/storage/images/course_image');
-        chmod($full_path,0775);
-
-        // $image->move($destinationPath, $imageName);
         $course->course_image = asset('storage/' . $imageName);
 
 
@@ -129,7 +125,7 @@ class CourseController extends Controller
         ? $course->curriculum->flatMap->lesson->sum('duration')
         : 0;
 
-        $hours = $totalMinute/60;
+        $hours = (int) ($totalMinute/60);
         $minutes = $totalMinute%60;
         $duration = ($hours>0? $hours . "hr " : "") . $minutes. "min";
 
@@ -328,6 +324,7 @@ class CourseController extends Controller
         $course->level_id=$request->level_id;
         $course->language_id = $request->language_id;
         $course->instructor_id = $request->instructor_id;
+        $course->is_public = $request->is_public;
         $course->update();
         return response()->json(
             [

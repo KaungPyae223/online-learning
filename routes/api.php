@@ -12,7 +12,6 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,10 +20,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-
+Route::post('instructors/update-photo',[InstructorController::class,"instructorImageUpdate"]);
 Route::apiResource('instructors',InstructorController::class);
 
-
+Route::post('blog/update-photo',[BlogController::class,"updateBlogImage"]);
 Route::apiResource('blog',BlogController::class);
 
 Route::apiResource('faq',FAQController::class);

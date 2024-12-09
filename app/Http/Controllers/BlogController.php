@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBlogRequest;
 use App\Http\Requests\UpdateBlogRequest;
 use App\Models\Blog;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class BlogController extends Controller
 {
@@ -42,30 +44,12 @@ class BlogController extends Controller
         $blog->instructor_id = $request->instructor_id;
         $blog->blog_info = $request->blog_info;
         $blog->blog_content = $request->blog_content;
-        // $images= [];
 
-        // if($request->blog_image){
-        //     foreach($request->file('blog_image') as $image){
-        //         $img = 'blog_image' . uniqid() . "." . $image->extension();
-        //          $image->storeAs('public/blog_image', $img);
-        //         $images[] = $img;
-        //     }
-        //     $blog->blog_image = json_encode($images);
-        // }
         if($request->file('blog_image')){
             $image = $request->file('blog_image');
-            $destinationPath = public_path('blog_images');
             $imageName = 'blog_image_' . uniqid() . '.' . $image->extension();
-            $image->move($destinationPath, $imageName);
-            $blog->blog_image = url('blog_images/' . $imageName);
-
-            if ($blog->blog_image) {
-                $oldImagePath = str_replace(url('/'), public_path(), $blog->blog_image);
-                if (File::exists($oldImagePath)) {
-                    File::delete($oldImagePath);
-                }
-            }
-
+            $imagePath = $image->storeAs("images/course_image", $imageName,"public");
+            $blog->blog_image = asset('storage/' . $imagePath);
         }
         $blog->save();
         return response()->json([
@@ -97,6 +81,43 @@ class BlogController extends Controller
         //
     }
 
+    public function updateBlogImage (Request $request){
+        $request->validate([
+            "image" => "required|image|mimes:jpeg,png,jpg,gif|max:2048",
+            "id" => "required|exists:blogs,id"
+        ]);
+
+
+        if($request->hasFile("image")){
+
+            $id = $request->id;
+            $image = $request->file("image");
+            $imageName = 'blog_image_' . uniqid() . '.' . $image->extension();
+
+            $blog = Blog::find($id);
+
+            $imageName = 'blog_image_' . uniqid() . '.' . $image->extension();
+            $imagePath = $image->storeAs("images/course_image",$imageName,"public");
+
+
+            $oldImage = $blog->blog_image;
+            $oldImagePath = str_replace(asset('storage'),"",$oldImage);
+
+            if(Storage::disk('public')->exists($oldImagePath)){
+                Storage::disk('public')->delete($oldImagePath);
+            }
+
+            $blog->blog_image = asset('storage/'.$imagePath);
+            $blog->update();
+
+            return response()->json(['message' => 'Image updated successfully!', 'path' => $blog->blog_image], 200);
+
+        }
+
+        return response()->json(['message' => 'No image uploaded'], 400);
+
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -108,17 +129,7 @@ class BlogController extends Controller
         $blog->instructor_id = $request->instructor_id;
         $blog->blog_info = $request->blog_info;
         $blog->blog_content = $request->blog_content;
-        $images= [];
 
-        if($request->blog_image){
-            foreach($request->file('blog_image') as $image){
-                $img = 'blog_image' . uniqid() . "." . $image->extension();
-                 $image->storeAs('public/blog_image', $img);
-                $images[] = $img;
-            }
-            $blog->blog_image = json_encode($images);
-        }
-        $blog->update();
         return response()->json([
             'blog' => $blog,
             'message' => 'Blog updated successfully',
