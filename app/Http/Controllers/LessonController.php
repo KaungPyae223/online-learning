@@ -51,7 +51,7 @@ class LessonController extends Controller
         $video = $request->file('video');
         $videoName = 'Course_video_' . uniqid() . '.' . $video->getClientOriginalExtension(); // Generate a unique name
 
-        $videoPath = $video->storeAs("/course_video", $videoName,"public");
+        $videoPath = $video->storeAs("videos/course_video", $videoName,"public");
 
         // Analysis the duration
 
@@ -117,7 +117,7 @@ class LessonController extends Controller
             $lesson = Lesson::find($lesson_id);
 
             $videoName = 'Course_video_' . uniqid() . '.' . $video->getClientOriginalExtension(); // Generate a unique name
-            $videoPath = $video->storeAs("/course_video",$videoName,"public");
+            $videoPath = $video->storeAs("videos/course_video",$videoName,"public");
 
             $getID3 = new getID3();
             $fileInfo = $getID3->analyze(storage_path('app/public/' . $videoPath));

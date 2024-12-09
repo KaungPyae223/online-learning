@@ -26,7 +26,6 @@ class UpdateInstructorRequest extends FormRequest
             'name' => 'required|string|min:3|max:255',
             ' info ' => 'nullable|string|min:10',
             'type'   => 'required|string',
-            'instructor_image' => 'nullable|image|mimes:jpeg,png,jpg,gif'
         ];
     }
 }

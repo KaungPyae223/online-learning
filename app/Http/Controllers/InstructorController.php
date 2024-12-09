@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreInstructorRequest;
 use App\Http\Requests\UpdateInstructorRequest;
 use App\Models\Instructor;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class InstructorController extends Controller
 {
@@ -45,26 +47,13 @@ class InstructorController extends Controller
         $instructor->type = $request->type;
         if($request->file('instructor_image')){
             $image = $request->file('instructor_image');
-            $destinationPath = public_path('instructor_images');
-            $imageName = 'instructor_image_' . uniqid() . '.' . $image->extension();
-            $image->move($destinationPath, $imageName);
-            $instructor->instructor_image = url('instructor_images/' . $imageName);
 
-            if ($instructor->instructor_image) {
-                $oldImagePath = str_replace(url('/'), public_path(), $instructor->instructor_image);
-                if (File::exists($oldImagePath)) {
-                    File::delete($oldImagePath);
-                }
-            }
+            $imageName = 'instructor_image_' . uniqid() . '.' . $image->extension();
+            $imagePath = $image->storeAs("images/instructor_images", $imageName,"public");
+            $instructor->instructor_image = asset("storage/".$imagePath);
 
         }
 
-        // if ($request->instructor_image) {
-        //     $instructorImage = $request->file('instructor_image');
-        //     $instructorImageName = 'instructor_image' . uniqid() . "." . $instructorImage->extension();
-        //     $instructorImage->storeAs('public/instructor_images', $instructorImageName);
-        //     $instructor->instructor_image = json_encode($instructorImageName);
-        // }
         $instructor->facebook = $request->facebook;
         $instructor->instagram = $request->instagram;
         $instructor->linkedIn = $request->linkedIn;
@@ -101,6 +90,40 @@ class InstructorController extends Controller
         //
     }
 
+    public function instructorImageUpdate(Request $request){
+        $request->validate([
+            "instructor_image"=>"required|image|mimes:jpeg,png,jpg,gif|max:2048",
+            "instructor_id" => "required|exists:instructors,id"
+        ]);
+
+        if($request->hasFile("instructor_image")){
+
+            $image = $request->file("instructor_image");
+            $id = $request->instructor_id;
+
+            $imageName = 'instructor_image_' . uniqid() . '.' . $image->extension();
+            $imagePath = $image->storeAs("images/instructor_images", $imageName,"public");
+
+
+            $instructor = Instructor::find($id);
+            $oldImage = $instructor->instructor_image;
+            $oldImagePath = str_replace(asset("storage"),"",$oldImage);
+
+            if(Storage::disk("public")->exists($oldImagePath)){
+                Storage::disk("public")->delete($oldImagePath);
+            }
+
+            $instructor->instructor_image = asset("storage/".$imagePath);
+            $instructor->update();
+
+            return response()->json(['message' => 'Image updated successfully!', 'path' => $course->course_image], 200);
+
+        }
+
+        return response()->json(['message' => 'No image uploaded'], 400);
+        
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -112,14 +135,6 @@ class InstructorController extends Controller
         $instructor->name = $request->name;
         $instructor->info = $request->info;
         $instructor->type = $request->type;
-        if ($request->instructor_image) {
-            $instructorImage = $request->file('instructor_image');
-            $instructorImageName = 'instructor_image' . uniqid() . "." . $instructorImage->extension();
-            $instructorImage->storeAs('public/instructor_images', $instructorImageName);
-            $instructor->instructor_image = json_encode($instructorImageName);
-        }else{
-            $instructor->instructor_image = $instructor->instructor_image;
-        }
         $instructor->facebook = $request->facebook;
         $instructor->instagram = $request->instagram;
         $instructor->linkedIn = $request->linkedIn;

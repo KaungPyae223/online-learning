@@ -32,6 +32,7 @@ class UpdateCourseRequest extends FormRequest
             "level_id" => "required|exists:levels,id",
             "language_id" => "required|exists:languages,id",
             "instructor_id" => "required|exists:instructors,id",
+            "is_public" => "required|boolean"
         ];
     }
 }
